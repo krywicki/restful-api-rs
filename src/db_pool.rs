@@ -15,7 +15,6 @@ impl WitherConnectionManger {
 }
 
 pub struct WitherConnection {
-    client: Client,
     db: Database
 }
 
@@ -35,12 +34,11 @@ impl ManageConnection for WitherConnectionManger {
         let client = executor::block_on(Client::with_uri_str(self.uri.as_ref())).expect("failed connected to db");
 
         Ok(WitherConnection {
-            db: client.database("production"),
-            client: client
+            db: client.database("production")
         })
     }
 
-    fn is_valid(&self, conn: &mut Self::Connection) -> Result<(), Error> {
+    fn is_valid(&self, _: &mut Self::Connection) -> Result<(), Error> {
         Ok(())
     }
 
