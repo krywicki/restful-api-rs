@@ -1,10 +1,18 @@
-use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use crate::schemas;
+use actix_web::{App, HttpRequest, Responder, web::{self, Data}};
+use wither::Model;
 
-pub async fn get_users(req: HttpRequest) -> impl Responder {
+use crate::{ schemas, models::{self, User}, DbPool };
+
+pub async fn get_users(req: HttpRequest, pool: web::Data<DbPool>) -> impl Responder {
+
+    let conn = pool.get().expect("failed getting db connection from pool");
+
+    let users = User::find(&**conn, None, None).await;
+
+
     web::Json(schemas::UserResponse {
-        firstName: String::from("joe"),
-        lastName: String::from("krywicki"),
+        first_name: String::from("joe"),
+        last_name: String::from("krywicki"),
         email: String::from("joe.krywicki@gmail.com")
     })
 }

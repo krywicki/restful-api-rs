@@ -1,3 +1,3 @@
 
-pub mod openid;
 pub mod jwt;
+pub mod openid;

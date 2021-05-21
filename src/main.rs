@@ -1,17 +1,22 @@
 extern crate api;
 
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use api::endpoints;
+use r2d2::Pool;
 
-async fn hello() -> impl Responder {
-    "hello"
-}
+use api::endpoints;
+use api::db_pool::WitherConnectionManger;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(||{
+
+    let manager = WitherConnectionManger::from_uri("");
+    let pool = Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.");
+
+    HttpServer::new(move ||{
         App::new()
-            .route("/", web::get().to(hello))
+            .data(pool.clone())
             .route("/users", web::get().to(endpoints::users::get_users))
     })
     .bind(("127.0.0.1", 8080))?
