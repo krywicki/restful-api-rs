@@ -1,22 +1,22 @@
 extern crate api;
 
+use std::sync::Arc;
+
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use r2d2::Pool;
 
 use api::endpoints;
-use api::db_pool::WitherConnectionManger;
+use wither::mongodb;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let manager = WitherConnectionManger::from_uri("");
-    let pool = Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool.");
+    let uri = "mongodb://admin:admin@localhost:27017/?authSource=admin";
+    let client = mongodb::Client::with_uri_str(uri).await.expect("failed connecting to db");
+    let db = web::Data::new(client.database("production"));
 
     HttpServer::new(move ||{
         App::new()
-            .data(pool.clone())
+            .app_data(db.clone())
             .route("/users", web::get().to(endpoints::users::get_users))
     })
     .bind(("127.0.0.1", 8080))?
