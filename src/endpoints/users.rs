@@ -7,7 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 
 use crate::{ Result, models::User, schemas::{ Page, UserResponse }};
 
-pub async fn get_users(req: HttpRequest, db: web::Data<Database>) -> Result<impl Responder> {
+pub async fn get_users(_: HttpRequest, db: web::Data<Database>) -> Result<impl Responder> {
 
     //== find users (simple)
     let opts = FindOptions::builder().limit(30).build();

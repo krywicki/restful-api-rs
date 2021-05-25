@@ -1,10 +1,5 @@
-use std::convert::{ From, TryFrom };
-
+use actix_web_validator::Validate;
 use serde::{ Serialize, Deserialize };
-use wither::bson;
-
-use crate::Error;
-
 
 #[derive(Serialize)]
 pub struct UserResponse {
@@ -32,29 +27,12 @@ impl TryFrom<bson::Document> for UserResponse {
     }
 }
 
-#[derive(Serialize)]
-pub struct Page<T>
-    where T: Serialize
-{
-    pub next: String,
-    pub count: usize,
-    pub items: Vec<T>
-}
-
-impl<T> From<Vec<T>> for Page<T>
-    where T: Serialize
-{
-    fn from(items: Vec<T>) -> Self {
-        Page {
-            next: "".into(),
-            count: items.len(),
-            items: items
-        }
-    }
-}
-
 #[derive(Deserialize)]
-pub struct PageQueryParams {
+struct GetUsersQueryParams {
     limit: usize,
-    offset: usize
+
+    offset: usize,
+
+    #[serde(rename="orderBy")]
+    order_by: String,
 }
