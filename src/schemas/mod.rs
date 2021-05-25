@@ -1,15 +1,12 @@
 use std::convert::{ From, TryFrom };
+use std::fmt;
+
 use serde::Serialize;
-use wither::bson::{self, document::ValueAccessError};
+use wither::{ bson::{self, document::ValueAccessError, Document } };
+use actix_web::{ error::ResponseError, dev::HttpResponseBuilder, http, web, HttpResponse };
 
-#[derive(Debug)]
-pub struct SchemaError(String);
+use crate::Error;
 
-impl From<ValueAccessError> for SchemaError {
-    fn from(err: ValueAccessError) -> SchemaError {
-        SchemaError(err.to_string())
-    }
-}
 
 #[derive(Serialize)]
 pub struct UserResponse {
@@ -25,7 +22,7 @@ pub struct UserResponse {
 }
 
 impl TryFrom<bson::Document> for UserResponse {
-    type Error = SchemaError;
+    type Error = Error;
 
     fn try_from(doc: bson::Document) -> Result<Self, Self::Error> {
         Ok(UserResponse{
