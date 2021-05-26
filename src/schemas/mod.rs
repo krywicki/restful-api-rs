@@ -2,35 +2,12 @@ use std::convert::{ From, TryFrom };
 
 use serde::{ Serialize, Deserialize };
 use wither::bson;
+use validator::{ Validate, ValidationError };
 
 use crate::Error;
 
+pub mod users;
 
-#[derive(Serialize)]
-pub struct UserResponse {
-    pub id: String,
-
-    pub email: String,
-
-    #[serde(rename="firstName")]
-    pub first_name: String,
-
-    #[serde(rename="lastName")]
-    pub last_name: String,
-}
-
-impl TryFrom<bson::Document> for UserResponse {
-    type Error = Error;
-
-    fn try_from(doc: bson::Document) -> Result<Self, Self::Error> {
-        Ok(UserResponse{
-            id: doc.get_object_id("_id")?.to_string(),
-            first_name: doc.get_str("firstName")?.into(),
-            last_name: doc.get_str("lastName")?.into(),
-            email: doc.get_str("email")?.into()
-        })
-    }
-}
 
 #[derive(Serialize)]
 pub struct Page<T>
@@ -53,8 +30,15 @@ impl<T> From<Vec<T>> for Page<T>
     }
 }
 
-#[derive(Deserialize)]
-pub struct PageQueryParams {
-    limit: usize,
-    offset: usize
+#[derive(Deserialize, Validate)]
+pub struct PageParams {
+    #[validate(range(min=1, max=9999))]
+    #[serde(default="default_limit")]
+    pub limit: usize,
+
+    #[serde(default="default_offset")]
+    pub offset: usize,
 }
+
+fn default_limit() -> usize { 200 }
+fn default_offset() -> usize { 0 }

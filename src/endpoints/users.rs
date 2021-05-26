@@ -1,13 +1,17 @@
 use std::convert::TryFrom;
 use std::convert::From;
 
-use actix_web::{ HttpRequest, Responder, web };
+use actix_web::{ HttpRequest, Responder, web, };
 use wither::{ Model, mongodb::{ Database, options::FindOptions }};
 use futures::{StreamExt, TryStreamExt};
+use validator::Validate;
 
-use crate::{ Result, models::User, schemas::{ Page, UserResponse }};
+use crate::{ Result, models::User};
+use crate::schemas::{ Page, users::{UserResponse, GetUsersParams}};
 
-pub async fn get_users(_: HttpRequest, db: web::Data<Database>) -> Result<impl Responder> {
+pub async fn get_users(_: HttpRequest, params: web::Query<GetUsersParams>, db: web::Data<Database>) -> Result<impl Responder> {
+
+    params.validate()?;
 
     //== find users (simple)
     let opts = FindOptions::builder().limit(30).build();

@@ -1,16 +1,19 @@
-use actix_web_validator::Validate;
+
+use std::convert::{ From, TryFrom };
+
+use validator::{ Validate, ValidationError };
 use serde::{ Serialize, Deserialize };
+use wither::bson;
+
+use crate::Error;
+use crate::schemas::PageParams;
 
 #[derive(Serialize)]
+#[serde(rename_all="camelCase")]
 pub struct UserResponse {
     pub id: String,
-
     pub email: String,
-
-    #[serde(rename="firstName")]
     pub first_name: String,
-
-    #[serde(rename="lastName")]
     pub last_name: String,
 }
 
@@ -27,12 +30,20 @@ impl TryFrom<bson::Document> for UserResponse {
     }
 }
 
-#[derive(Deserialize)]
-struct GetUsersQueryParams {
-    limit: usize,
+#[derive(Deserialize, Validate)]
+#[serde(rename_all="camelCase")]
+pub struct GetUsersParams {
 
-    offset: usize,
+    #[serde(flatten)]
+    pub pagination: PageParams,
 
-    #[serde(rename="orderBy")]
-    order_by: String,
+    #[validate(custom="users_order_by")]
+    #[serde(default="default_order_by")]
+    pub order_by: String,
+}
+
+fn default_order_by() -> String { "lastName".into() }
+
+fn users_order_by(value:&str) -> Result<(), ValidationError> {
+    Ok(())
 }
