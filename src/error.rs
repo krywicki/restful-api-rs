@@ -1,9 +1,9 @@
-use std::fmt;
+use std::{borrow::Cow, collections::HashMap, fmt};
 
 use serde::Serialize;
-use serde_json::json;
+use serde_json::{Map, json, value};
 
-use validator::ValidationError;
+use validator::{ValidationError, ValidationErrors};
 use wither::{ bson::{ document::ValueAccessError }, mongodb };
 use actix_web::{HttpResponse, error::{QueryPayloadError, ResponseError}, http::{self, StatusCode, header}};
 use derive_more::{Error};
@@ -41,8 +41,9 @@ impl ResponseError for ErrorResponse {
     }
 }
 
-//pub type ErrorResponse=ErrorResponseType<String>;
-
+///
+/// Convert ValueAccessError to ErrorResponse
+///
 impl From<ValueAccessError> for ErrorResponse {
     fn from(error: ValueAccessError) -> Self {
         ErrorResponse {
@@ -53,12 +54,38 @@ impl From<ValueAccessError> for ErrorResponse {
     }
 }
 
+///
+/// Convert mongodb error to ErrorResponse
+///
 impl From<wither::mongodb::error::Error> for ErrorResponse {
     fn from(error: wither::mongodb::error::Error) -> Self {
         ErrorResponse {
             code: StatusCode::INTERNAL_SERVER_ERROR,
             message: "Internal Server Error".into(),
             detail: Some(format!("{}", error).into())
+        }
+    }
+}
+
+//
+// Convert Validation Errors into ErrorResponse
+//
+impl From<ValidationError> for ErrorResponse {
+    fn from(error: ValidationError) -> Self {
+        ErrorResponse {
+            code: StatusCode::BAD_REQUEST,
+            message: error.message.unwrap_or(Cow::from("Validation Error")).into(),
+            detail: Some(value::to_value(error.params).unwrap())
+        }
+    }
+}
+
+impl From<ValidationErrors> for ErrorResponse {
+    fn from(error: ValidationErrors) -> Self {
+        ErrorResponse {
+            code: StatusCode::BAD_REQUEST,
+            message: error.to_string(),
+            detail: None
         }
     }
 }
