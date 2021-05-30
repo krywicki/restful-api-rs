@@ -3,8 +3,6 @@ pub mod endpoints;
 pub mod middleware;
 pub mod utils;
 pub mod models;
+pub mod web;
 
-mod error;
-pub use error::Error;
-
-pub type Result<T> = std::result::Result<T, Error>;
+pub mod error;

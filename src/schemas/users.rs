@@ -5,8 +5,9 @@ use validator::{ Validate, ValidationError };
 use serde::{ Serialize, Deserialize };
 use wither::bson;
 
-use crate::Error;
+
 use crate::schemas::PageParams;
+use crate::error::ErrorResponse;
 
 #[derive(Serialize)]
 #[serde(rename_all="camelCase")]
@@ -18,7 +19,7 @@ pub struct UserResponse {
 }
 
 impl TryFrom<bson::Document> for UserResponse {
-    type Error = Error;
+    type Error = ErrorResponse;
 
     fn try_from(doc: bson::Document) -> Result<Self, Self::Error> {
         Ok(UserResponse{

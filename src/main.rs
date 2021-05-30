@@ -14,7 +14,7 @@ async fn main() -> std::io::Result<()> {
     let client = mongodb::Client::with_uri_str(uri).await.expect("failed connecting to db");
     let db = web::Data::new(client.database("production"));
 
-    HttpServer::new(move ||{
+    HttpServer::new(move || {
         App::new()
             .app_data(db.clone())
             .route("/users", web::get().to(endpoints::users::get_users))

@@ -2,9 +2,8 @@ use std::convert::{ From, TryFrom };
 
 use serde::{ Serialize, Deserialize };
 use wither::bson;
-use validator::{ Validate, ValidationError };
+use validator::Validate;
 
-use crate::Error;
 
 pub mod users;
 
