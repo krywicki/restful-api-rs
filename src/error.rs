@@ -82,10 +82,17 @@ impl From<ValidationError> for ErrorResponse {
 
 impl From<ValidationErrors> for ErrorResponse {
     fn from(error: ValidationErrors) -> Self {
+
+        let mut errors: Map<String, serde_json::Value> = Map::new();
+
+        error.errors().iter().for_each(|e| {
+            errors.insert(e.0.to_string(), serde_json::to_value(e.1).unwrap());
+        });
+
         ErrorResponse {
             code: StatusCode::BAD_REQUEST,
-            message: error.to_string(),
-            detail: None
+            message: "Validation Error".into(),
+            detail: Some(errors.into())
         }
     }
 }

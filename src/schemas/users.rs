@@ -4,9 +4,10 @@ use std::convert::{ From, TryFrom };
 use validator::{ Validate, ValidationError };
 use serde::{ Serialize, Deserialize };
 use wither::bson;
+use wither::bson::bson;
+use wither::bson::doc;
 
-
-use crate::schemas::PageParams;
+use crate::schemas;
 use crate::error::ErrorResponse;
 
 #[derive(Serialize)]
@@ -34,13 +35,32 @@ impl TryFrom<bson::Document> for UserResponse {
 #[derive(Deserialize, Validate)]
 #[serde(rename_all="camelCase")]
 pub struct GetUsersParams {
+    pub order_by: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
 
-    #[serde(flatten)]
-    pub pagination: PageParams,
+    #[validate(range(min=1, max=9_999))]
+    #[serde(default="schemas::default_page_limit")]
+    pub limit:i64,
 
-    #[validate(custom="users_order_by")]
-    #[serde(default="default_order_by")]
-    pub order_by: String,
+    #[serde(default="schemas::default_page_offset")]
+    pub offset:usize,
+}
+
+impl GetUsersParams {
+    pub fn make_filter(&self) -> Option<bson::Document> {
+        let mut filter = bson::Document::new();
+
+        if let Some(ref first_name) = self.first_name {
+            filter.insert("firstName", bson::Bson::String(first_name.clone()));
+        }
+
+        if let Some(ref last_name) = self.last_name {
+            filter.insert("lastName", bson::Bson::String(last_name.clone()));
+        }
+
+        Some(filter)
+    }
 }
 
 fn default_order_by() -> String { "lastName".into() }

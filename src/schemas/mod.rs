@@ -29,15 +29,5 @@ impl<T> From<Vec<T>> for Page<T>
     }
 }
 
-#[derive(Deserialize, Validate)]
-pub struct PageParams {
-    #[validate(range(min=1, max=9999))]
-    #[serde(default="default_limit")]
-    pub limit: usize,
-
-    #[serde(default="default_offset")]
-    pub offset: usize,
-}
-
-fn default_limit() -> usize { 200 }
-fn default_offset() -> usize { 0 }
+fn default_page_limit() -> i64 { 200 }
+fn default_page_offset() -> usize { 0 }
